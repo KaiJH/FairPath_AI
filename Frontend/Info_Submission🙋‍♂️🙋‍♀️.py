@@ -2,50 +2,32 @@ import streamlit as st
 import os
 import requests
 
-# 🚀 修正重點：改為讀取環境變數，預設值僅供本機開發使用
-# 在 Docker Compose 中，這會被設定為 http://fairpath-backend:8000/...
-BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api/v1/analyze-career")
-
-# 修復 Protobuf 衝突
-os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://fairpath-backend:8000/api/v1/analyze-career")
 
 st.set_page_config(page_title="FairPath AI", layout="wide")
 st.title("🚀 FairPath AI: Multi-Agent Navigation")
 
 if "result" not in st.session_state:
     st.session_state["result"] = None
+if "target_job" not in st.session_state:
+    st.session_state["target_job"] = ""
 
-with st.form("input_form"):
-    st.subheader("Candidate Information")
-    col1, col2 = st.columns(2)
-    with col1:
-        job = st.text_input("Target Job (e.g., Data Scientist)")
-        comp = st.text_input("Target Company")
-    with col2:
-        resume = st.file_uploader("Upload Resume (PDF)", type="pdf")
-        sentiment = st.text_area("Sponsorship Info (Optional)")
-    
-    submit = st.form_submit_button("Start Fair Evaluation")
+with st.form("main_form"):
+    job = st.text_input("Target Job Title", value=st.session_state["target_job"])
+    resume = st.file_uploader("Upload Resume (PDF)", type="pdf")
+    submit = st.form_submit_button("Start Analysis")
 
 if submit and resume and job:
-    with st.spinner("Agents are de-biasing and analyzing your profile..."):
+    st.session_state["target_job"] = job # 存入 session 供後續頁面使用
+    with st.spinner("Analyzing..."):
         try:
             files = {"file": (resume.name, resume.getvalue(), "application/pdf")}
-            data = {
-                "target_job": job,
-                "company_name": comp,
-                "sentiment_data": sentiment
-            }
-            
-            # 🚀 使用動態載入的 BACKEND_URL
-            resp = requests.post(BACKEND_URL, files=files, data=data, timeout=60)
-            
+            data = {"target_job": job}
+            resp = requests.post(BACKEND_URL, files=files, data=data)
             if resp.status_code == 200:
                 st.session_state["result"] = resp.json()
-                st.success("Analysis Complete! Please check the sub-pages in the sidebar.")
+                st.success("Analysis Complete! Go to 'Merit Report' in the sidebar.")
             else:
-                st.error(f"Backend returned an error: {resp.status_code}")
+                st.error("Backend Error.")
         except Exception as e:
-            st.error(f"Could not connect to backend at {BACKEND_URL}. Error: {str(e)}")
-
-st.info("System Goal: Ensure international students are evaluated based on merit while building a strong ROI case.")
+            st.error(f"Connection failed: {str(e)}")
