@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 後端服務：處理 Multi-Agent 邏輯 
+  fairpath-backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: fairpath-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./Backend/.env
+    restart: always
+    # 增加持久化儲存空間（可選），用於存放上傳的履歷暫存
+    volumes:
+      - ./Backend/data:/app/data
+
+  # 前端服務：提供使用者介面 
+  fairpath-frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: fairpath-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      # 重要：將前端指向 Docker 內部的後端服務名稱
+      - BACKEND_URL=http://fairpath-backend:8000/api/v1/analyze-career
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+    depends_on:
+      - fairpath-backend
+    restart: always
+
+networks:
+  default:
+    name: fairpath-network
