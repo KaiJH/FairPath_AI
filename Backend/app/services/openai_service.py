@@ -19,7 +19,7 @@ def ask_llm(system_prompt: str, user_content: str) -> str:
     try:
         client = get_openai_client()
         response = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+            model="gpt-5.4",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content}

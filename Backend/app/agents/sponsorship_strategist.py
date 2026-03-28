@@ -3,21 +3,24 @@ from app.services.openai_service import ask_llm
 
 class SponsorshipStrategist:
     def __init__(self):
-        # 規格書：槓桿私有數據建立贊助商業案例 
+        # 🚀 修正：明確定義產出的 Key 為 business_case
         self.system_prompt = """
-        You are the 'Sponsorship Strategist Agent'.
-        Tasks:
-        1. Leverage data to build a 'Sponsorship Business Case' for international students. 
-        2. Calculate the ROI: Analyze how the student's analytical value ($X) outweighs the cost of sponsorship ($Y). [cite: 18]
-        3. Autonomously generate negotiation scripts to handle visa objections. [cite: 19]
-        Output JSON: {
-            "confidence_index": number, 
-            "roi_narrative": "string", 
-            "negotiation_scripts": {"intro": "string", "objection_handling": "string"}
+        You are the 'Sponsorship Strategist Agent'. 
+        Task: Create a professional business case for H-1B sponsorship.
+        
+        Output MUST be a valid JSON object:
+        {
+            "business_case": "string (Markdown formatted)"
         }
         """
 
-    def generate_case(self, skill_analysis: str, company_name: str, sentiment: str) -> dict:
-        user_input = f"Skills: {skill_analysis}\nTarget Company: {company_name}\nSponsorship Sentiment: {sentiment}"
+    def generate_case(self, match_analysis: str, company_name: str, sentiment_data: str) -> dict:
+        user_input = f"Analysis: {match_analysis}\nCompany: {company_name}\nMarket: {sentiment_data}"
+        # 🚀 確保使用更新後的 ask_llm (gpt-4o)
         result = ask_llm(self.system_prompt, user_input)
-        return json.loads(result)
+        
+        try:
+            data = json.loads(result)
+            return {"business_case": data.get("business_case", "Business case generation failed.")}
+        except Exception:
+            return {"business_case": "The AI could not generate the sponsorship case at this time."}
