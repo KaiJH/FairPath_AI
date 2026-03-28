@@ -13,7 +13,7 @@ class MarketDataService:
             print(f"Warning: Market data CSV not found at {csv_path}")
             
     def get_market_insights(self, target_job: str):
-        print(f"[market] target job: {target_job}")
+        # print(f"[market] target job: {target_job}")
         if self.df is None or not target_job:
             return None
         
@@ -28,7 +28,7 @@ class MarketDataService:
                 "cpt_friendly": 0
             }
         
-        print(f"[market] filtered: {filtered.head()}")
+        # print(f"[market] filtered: {filtered.head()}")
         
         visa_dist = filtered['visa_pathway'].value_counts().to_dict()
         
@@ -49,7 +49,7 @@ class MarketDataService:
             "cpt_friendly": cpt_companies
         }
         
-        print(f"[market] return value: {return_value}")
+        # print(f"[market] return value: {return_value}")
         
         return return_value
         
