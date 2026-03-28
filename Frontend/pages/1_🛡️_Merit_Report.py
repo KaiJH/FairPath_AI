@@ -12,6 +12,8 @@ if not st.session_state.get("result"):
 res = st.session_state["result"]
 matching_data = res.get("matching", {})
 privacy_data = res.get("privacy", {})
+market = res.get("market_stats", {})
+target_job = res.get("target_job", "Job")
 
 col1, col2 = st.columns([1, 2])
 with col1:
@@ -25,6 +27,21 @@ with col1:
         st.error(f"- {gap}")
         
 with col2:
+    st.subheader(f"📊 Market Visibility for '{target_job}'")
+    
+    if market:
+        # m_col1, m_col2, m_col3, m_col4 = st.columns([1, 1, 1, 1])
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        m_col1.metric("Verified Job Postings", market.get("total_jobs", 0))
+        m_col2.metric("Requires Sponsorship Companies", market.get("require_sponsorship", 0))
+        m_col3.metric("CPT-Friendly Companies", market.get("cpt_friendly", 0))
+        m_col4.metric("OPT-Friendly Companies", market.get("opt_friendly", 0))
+
+st.divider()
+
+p_col1, p_col2 = st.columns([1, 2])
+
+with p_col1:
     st.subheader("Privacy Protection")
     
     # 🚀 調整點 1：將 De-identified Profile 的排版風格改為對齊旁邊的 Skill Gaps (實心紅底、白色粗體字型)
@@ -36,16 +53,16 @@ with col2:
     st.markdown(
         f"""
         <div style="background-color: #220088; color: white; font-weight: bold; padding: 15px; border-radius: 5px; height: 300px; overflow-y: scroll; font-family: sans-serif; white-space: pre-wrap; font-size: 14px;">
-{masked_profile_text}
+        {masked_profile_text}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    st.divider()
+    # st.divider()
     
     # 🚀 調整點 2：還原 Screenshot 19.36.02 的紅色實心背景 Bias Risk 區塊
-    
+with p_col2:
     st.subheader("Bias Risk") # 粗體子標題
     
     bias_risk_content = privacy_data.get("bias_risk_alert", "Potential bias risks identified\n(1) No specific risks analyzed.")

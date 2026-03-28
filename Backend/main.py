@@ -13,6 +13,7 @@ from app.agents.career_architect import CareerArchitect
 from app.agents.sponsorship_strategist import SponsorshipStrategist
 from app.agents.resilience_coach import ResilienceCoach
 from app.agents.policy_sentry import PolicySentry
+from app.services.market_data_service import market_service
 
 app = FastAPI(title="FairPath AI Full System")
 
@@ -46,6 +47,8 @@ async def analyze_career(
         privacy = guardian.process(raw_text)
         matching = architect.analyze(privacy.get("masked_content", ""), target_job)
         
+        market_stats = market_service.get_market_insights(target_job)
+        
         # 產生贊助案例
         sponsorship = strategist.generate_case(
             matching.get("match_analysis", ""), 
@@ -56,7 +59,9 @@ async def analyze_career(
         return {
             "privacy": privacy,
             "matching": matching,
-            "sponsorship": sponsorship
+            "sponsorship": sponsorship,
+            "market_stats": market_stats,
+            "target_job": target_job
         }
     except Exception as e:
         return {"error": str(e)}
